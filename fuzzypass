@@ -57,3 +57,15 @@ if [[ $typeit -eq 0 ]]; then
 else
     pass show "$password" | { IFS= read -r pass; printf %s "$pass"; } | $xdotool
 fi
+
+notify=""
+
+if [[ -n $(command -v notify-send) ]]; then
+    notify="notify-send"
+elif [[ -n $(command -v dunstify) ]]; then
+    notify="dunstify"
+fi
+
+if [[ -n $notify ]]; then
+    $notify -a "fuzzypass" "Copied $password to clipboard" "Will clear in 45 seconds" -t 2500
+fi
