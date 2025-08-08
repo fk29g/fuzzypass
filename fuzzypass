@@ -8,7 +8,7 @@ if [[ $1 == "--type" ]]; then
     shift
 fi
 
-WAYLAND_MENUS=("dmenu-wl" "fuzzel" "rofi" "wofi")
+WAYLAND_MENUS=("dmenu-wl" "fuzzel" "rofi" "wofi" "tofi")
 X11_MENUS=("dmenu" "rofi")
 menus=()
 dmenu=()
@@ -32,6 +32,7 @@ for menu in "${menus[@]}"; do
             "fuzzel") dmenu=("fuzzel" "-d") ;;
             "rofi") dmenu=("rofi" "-dmenu") ;;
             "wofi") dmenu=("wofi" "-d") ;;
+            "tofi") dmenu=("tofi") ;;
         esac
         break
     fi
