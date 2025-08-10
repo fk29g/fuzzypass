@@ -15,7 +15,7 @@ dmenu=()
 
 if [[ -n $WAYLAND_DISPLAY ]]; then
     menus=("${WAYLAND_MENUS[@]}")
-    xdotool="ydotool type --file -"
+    xdotool="wtype -"
 elif [[ -n $DISPLAY ]]; then
     menus=("${X11_MENUS[@]}")
     xdotool="xdotool type --clearmodifiers --file -"
@@ -68,5 +68,10 @@ if [[ $typeit -eq 0 ]]; then
 
     pass show -c "$password" 2> /dev/null
 else
+    xdotool_binary=$(printf $xdotool | cut -d ' ' -f1)
+    if [[ -z $(command -v $xdotool_binary) ]]; then
+        echo "$xdotool_binary is not installed. Can't type." >&2
+        exit 1
+    fi
     pass show "$password" | { IFS= read -r pass; printf %s "$pass"; } | $xdotool
 fi
