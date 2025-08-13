@@ -2,16 +2,29 @@
 
 shopt -s nullglob globstar
 
-typeit=0
-if [[ $1 == "--type" ]]; then
-    typeit=1
-    shift
-fi
-
 WAYLAND_MENUS=("dmenu-wl" "fuzzel" "rofi" "wofi" "tofi")
 X11_MENUS=("dmenu" "rofi")
 menus=()
 dmenu=()
+
+tflag=false
+oflag=false
+pwotp="password"
+
+while getopts "to" flag; do
+    case "$flag" in
+        t)
+            tflag=true ;;
+        o)
+            oflag=true
+            pwotp="OTP"
+            ;;
+        \?)
+            exit 1 ;;
+    esac
+done
+
+shift $((OPTIND - 1))
 
 if [[ -n $WAYLAND_DISPLAY ]]; then
     menus=("${WAYLAND_MENUS[@]}")
@@ -53,8 +66,24 @@ password=$(printf '%s\n' "${password_files[@]}" | "${dmenu[@]}" "$@")
 
 [[ -n $password ]] || exit
 
-if [[ $typeit -eq 0 ]]; then
-    pass show -c "$password" 2> /dev/null
+if [ $tflag = true ]; then
+    xdotool_binary=$(printf $xdotool | cut -d ' ' -f1)
+    if [[ -z $(command -v $xdotool_binary) ]]; then
+        echo "$xdotool_binary is not installed. Can't type." >&2
+        exit 1
+    fi
+
+    if [ $oflag = true ]; then
+        printf %s "$(pass otp show $password)" | $xdotool
+    else
+        pass show "$password" | { IFS= read -r pass; printf %s "$pass"; } | $xdotool
+    fi
+else
+    if [ $oflag = true ]; then
+        pass otp show -c "$password" 2> /dev/null
+    else
+        pass show -c "$password" 2> /dev/null
+    fi
 
     notify=""
 
@@ -65,13 +94,6 @@ if [[ $typeit -eq 0 ]]; then
     fi
 
     if [[ -n $notify ]]; then
-        $notify -a "fuzzypass" "Copied $password to clipboard" "Will clear in 45 seconds" -t 2500
+        $notify -a "fuzzypass" "Copied $pwotp for $password to clipboard" "Will clear in 45 seconds" -t 2500
     fi
-else
-    xdotool_binary=$(printf $xdotool | cut -d ' ' -f1)
-    if [[ -z $(command -v $xdotool_binary) ]]; then
-        echo "$xdotool_binary is not installed. Can't type." >&2
-        exit 1
-    fi
-    pass show "$password" | { IFS= read -r pass; printf %s "$pass"; } | $xdotool
 fi
