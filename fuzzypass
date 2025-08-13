@@ -7,25 +7,6 @@ X11_MENUS=("dmenu" "rofi")
 menus=()
 dmenu=()
 
-tflag=false
-oflag=false
-pwotp="password"
-
-while getopts "to" flag; do
-    case "$flag" in
-        t)
-            tflag=true ;;
-        o)
-            oflag=true
-            pwotp="OTP"
-            ;;
-        \?)
-            exit 1 ;;
-    esac
-done
-
-shift $((OPTIND - 1))
-
 if [[ -n $WAYLAND_DISPLAY ]]; then
     menus=("${WAYLAND_MENUS[@]}")
     xdotool="wtype -"
@@ -36,6 +17,34 @@ else
     echo "Error: No Wayland or X11 display detected" >&2
     exit 1
 fi
+
+tflag=false
+oflag=false
+pwotp="password"
+
+while getopts "to" flag; do
+    case "$flag" in
+        t)
+            xdotool_binary=$(printf $xdotool | cut -d ' ' -f1)
+            if [[ -z $(command -v $xdotool_binary) ]]; then
+                echo "$xdotool_binary is not installed. Can't type." >&2
+                exit 1
+            fi
+            tflag=true ;;
+        o)
+            if [ ! -f /usr/lib/password-store/extensions/otp.bash ]; then
+                echo "pass-otp is not installed. Can't handle OTPs."
+                exit 1
+            fi
+            oflag=true
+            pwotp="OTP"
+            ;;
+        \?)
+            exit 1 ;;
+    esac
+done
+
+shift $((OPTIND - 1))
 
 for menu in "${menus[@]}"; do
     if [[ -n $(command -v $menu) ]]; then
@@ -67,12 +76,6 @@ password=$(printf '%s\n' "${password_files[@]}" | "${dmenu[@]}" "$@")
 [[ -n $password ]] || exit
 
 if [ $tflag = true ]; then
-    xdotool_binary=$(printf $xdotool | cut -d ' ' -f1)
-    if [[ -z $(command -v $xdotool_binary) ]]; then
-        echo "$xdotool_binary is not installed. Can't type." >&2
-        exit 1
-    fi
-
     if [ $oflag = true ]; then
         printf %s "$(pass otp show $password)" | $xdotool
     else
