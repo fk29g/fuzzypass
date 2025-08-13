@@ -94,6 +94,6 @@ else
     fi
 
     if [[ -n $notify ]]; then
-        $notify -a "fuzzypass" "Copied $pwotp for $password to clipboard" "Will clear in 45 seconds" -t 2500
+        $notify -a "fuzzypass" "Copied $pwotp for $password to clipboard" "Will clear in 45 seconds" -t 3000
     fi
 fi
