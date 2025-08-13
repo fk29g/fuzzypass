@@ -32,7 +32,7 @@ while getopts "to" flag; do
             fi
             tflag=true ;;
         o)
-            if [ ! -f /usr/lib/password-store/extensions/otp.bash ]; then
+            if [[ ! -f /usr/lib/password-store/extensions/otp.bash ]]; then
                 echo "pass-otp is not installed. Can't handle OTPs."
                 exit 1
             fi
@@ -75,14 +75,14 @@ password=$(printf '%s\n' "${password_files[@]}" | "${dmenu[@]}" "$@")
 
 [[ -n $password ]] || exit
 
-if [ $tflag = true ]; then
-    if [ $oflag = true ]; then
+if [[ $tflag = true ]]; then
+    if [[ $oflag = true ]]; then
         printf %s "$(pass otp show $password)" | $xdotool
     else
         pass show "$password" | { IFS= read -r pass; printf %s "$pass"; } | $xdotool
     fi
 else
-    if [ $oflag = true ]; then
+    if [[ $oflag = true ]]; then
         pass otp show -c "$password" 2> /dev/null
     else
         pass show -c "$password" 2> /dev/null
